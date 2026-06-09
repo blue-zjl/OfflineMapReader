@@ -11,6 +11,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -80,6 +83,60 @@ public class TileServer extends UniModule {
         invoke(callback, result);
     }
 
+    @UniJSMethod(uiThread = false)
+    public void listDirectories(JSONObject options, UniJSCallback callback) {
+        Map<String, Object> result = new HashMap<>();
+        String rawPath = options != null ? options.optString("path", "/storage") : "/storage";
+        File directory = new File(rawPath);
+
+        try {
+            File canonicalDirectory = directory.getCanonicalFile();
+            if (!canonicalDirectory.exists() || !canonicalDirectory.isDirectory()) {
+                result.put("success", false);
+                result.put("message", "目录不存在");
+                invoke(callback, result);
+                return;
+            }
+
+            File[] files = canonicalDirectory.listFiles();
+            if (files == null) {
+                files = new File[0];
+            }
+
+            Arrays.sort(files, new Comparator<File>() {
+                @Override
+                public int compare(File left, File right) {
+                    return left.getName().compareToIgnoreCase(right.getName());
+                }
+            });
+
+            ArrayList<Map<String, Object>> directories = new ArrayList<>();
+            for (File file : files) {
+                if (file == null || !file.isDirectory() || !file.canRead()) {
+                    continue;
+                }
+
+                Map<String, Object> item = new HashMap<>();
+                item.put("name", file.getName());
+                item.put("path", ensureDirectoryPath(file.getCanonicalPath()));
+                directories.add(item);
+            }
+
+            result.put("success", true);
+            result.put("currentPath", ensureDirectoryPath(canonicalDirectory.getCanonicalPath()));
+            File parent = canonicalDirectory.getParentFile();
+            if (parent != null) {
+                result.put("parentPath", ensureDirectoryPath(parent.getCanonicalPath()));
+            }
+            result.put("directories", directories);
+            invoke(callback, result);
+        } catch (IOException error) {
+            result.put("success", false);
+            result.put("message", error.getMessage());
+            invoke(callback, result);
+        }
+    }
+
     private synchronized void stopServer() {
         if (server == null) {
             return;
@@ -99,6 +156,14 @@ public class TileServer extends UniModule {
         if (callback != null) {
             callback.invoke(payload);
         }
+    }
+
+    private static String ensureDirectoryPath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return "";
+        }
+
+        return path.endsWith(File.separator) ? path : path + File.separator;
     }
 
     private static String guessMimeType(String fileName) {
