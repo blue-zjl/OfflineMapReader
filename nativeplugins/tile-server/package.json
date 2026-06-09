@@ -1,0 +1,12 @@
+{
+  "id": "tile-server",
+  "name": "tile-server",
+  "version": "1.0.0",
+  "description": "离线瓦片 HTTP 服务原生插件",
+  "platforms": {
+    "android": {
+      "package": "com.offlinemapreader.tileserver",
+      "class": "com.offlinemapreader.tileserver.TileServer"
+    }
+  }
+}

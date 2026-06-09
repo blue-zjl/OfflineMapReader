@@ -1,0 +1,27 @@
+{
+	"pages": [
+		{
+			"path": "pages/setting/setting",
+			"style": {
+				"navigationBarTitleText": "地图配置"
+			}
+		},
+		{
+			"path": "pages/map/map",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "高德离线地图读取器",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F6F7FB"
+	},
+	"uniIdRouter": {}
+}
